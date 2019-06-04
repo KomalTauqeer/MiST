@@ -162,14 +162,14 @@ def load_weights(ifile, tree, weights):
 
 
 def add_branch(filename, treename, branchname, branchtype, data):
-
+   
     # open input file and tree
-    ifile = TFile(filename,'READ')
+    ifile = TFile(filename,'READ')     
     itree = ifile.Get(treename)
-
+  
     # create output file
     ofile = TFile(filename+'.mist','RECREATE')
-
+ 
     # clone tree, FIX: hardcoded
     ofile.mkdir('utm')
     ofile.cd('utm')
@@ -185,11 +185,12 @@ def add_branch(filename, treename, branchname, branchtype, data):
 
     # close input file
     ifile.Close()
-
+   
     # make new variable and add it as a branch to the tree
     y_helper = array(branchtype.lower(),[0])
     branch = otree.Branch(branchname, y_helper, branchname + '/' + branchtype)
-
+   
+    
     # get number of entries and check if size matches the data
     n_entries = otree.GetEntries()
     print('entries are here')
@@ -199,10 +200,75 @@ def add_branch(filename, treename, branchname, branchtype, data):
 
     # fill the branch
     print('--- Adding branch %s in %s:%s ...' %(branchname, filename, treename))
-    for i in tqdm(xrange(n_entries)):
+    for i in range(n_entries):
         otree.GetEntry(i)
         y_helper[0] = data[i]
         branch.Fill()
+
+    # write new branch to the tree and close the file
+    ofile.Write("",TFile.kOverwrite)
+    ofile.Close()
+
+    # overwrite old file
+    print('--- Overwrite original file ...')
+    shutil.move(filename + '.mist', filename)
+
+# =========================================================== modification ==========================================================
+
+def add_branch_multi(filename, treename, n_outputs, branchname, branchtype, data):
+
+    # open input file and tree
+    ifile = TFile(filename,'READ')
+    itree = ifile.Get(treename)
+
+    # create output file
+    ofile = TFile(filename+'.mist','RECREATE')
+
+    # clone tree, FIX: hardcoded
+    ofile.mkdir('utm')
+    ofile.cd('utm')
+
+    # set branch inactive in itree if it already exists
+    for n in range(n_outputs):
+       if itree.FindBranch(branchname[n]):
+           itree.SetBranchStatus(branchname[n],0)
+
+    # clone itree
+    print('--- Cloning input file ...')
+    otree = itree.CloneTree()
+    otree.Write()
+
+    # close input file
+    ifile.Close()
+
+    # make new variable and add it as a branch to the tree
+    y_helper = array(branchtype.lower(),[0])
+    #print(y_helper)
+    
+    #branch = otree.Branch(branchname[0], y_helper, branchname[0] + '/' + branchtype)
+    #branch = otree.Branch(branchname[1], y_helper, branchname[1] + '/' + branchtype)
+    #branch = otree.Branch(branchname[2], y_helper, branchname[2] + '/' + branchtype)
+    #branch = otree.Branch(branchname[3], y_helper, branchname[3] + '/' + branchtype)
+    #branch = otree.Branch(branchname[4], y_helper, branchname[4] + '/' + branchtype)
+    #branch = otree.Branch(branchname[5], y_helper, branchname[5] + '/' + branchtype)
+    #branch = otree.Branch(branchname[6], y_helper, branchname[6] + '/' + branchtype)
+    #branch = otree.Branch(branchname[7], y_helper, branchname[7] + '/' + branchtype)
+    # get number of entries and check if size matches the data
+    n_entries = otree.GetEntries()
+    print('entries are here')
+    print(n_entries)
+    print(np.add.reduce(np.shape(data),0))
+    #if n_entries != np.add.reduce(np.shape(data),1):
+    #    print('mismatch in input tree entries and new branch entries!')
+
+    # fill the branch
+    print('--- Adding branch %s in %s:%s ...' %(branchname, filename, treename))
+    for j in range(n_outputs):
+      branch = otree.Branch(branchname[j], y_helper, branchname[j] + '/' + branchtype)
+      for i in range(n_entries):
+         otree.GetEntry(i)
+         y_helper[0] = data[i,j]
+         branch.Fill()
 
     # write new branch to the tree and close the file
     ofile.Write("",TFile.kOverwrite)

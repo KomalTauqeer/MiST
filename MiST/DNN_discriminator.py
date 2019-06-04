@@ -29,7 +29,7 @@ def plotDiscriminators(true_value,predicted_value,sample):
     true_value_index = np.argmax(true_value, axis = 1)
     predicted_value_index = np.argmax(predicted_value, axis =1)
     class_names = gl.arg['multi_train_plot_labels']
-    n_nodes = 8
+    n_nodes = 8 
     
     # Generate one plot per output node
     for node in range(n_nodes):
@@ -37,14 +37,14 @@ def plotDiscriminators(true_value,predicted_value,sample):
         print("\n PLOTTING OUTPUT NODE '"+ class_names[node] + "'")
 
         # Initilize list of arrays
-        processes = [[], [], [], [], [], [], [], []]
+        processes = [[],[], [], [], [], [], [], []]
 
         # Fill list of arrays
         nodePredictions = predicted_value[:,node]
         for event in range(np.add.reduce(np.shape(nodePredictions),0)):
             processes[true_value_index[event]].append(nodePredictions[event])
 
-        processesArrays = [np.asarray(processes[0]), np.asarray(processes[1]), np.asarray(processes[2]), np.asarray(processes[3]), np.asarray(processes[4]), np.asarray(processes[5]), np.asarray(processes[6]), np.asarray(processes[7])]
+        processesArrays = [np.asarray(processes[0]), np.asarray(processes[1]), np.asarray(processes[2]), np.asarray(processes[3]), np.asarray(processes[4]), np.asarray(processes[5]), np.asarray(processes[6]),np.asarray(processes[7])]
         # Plot all
         plt.figure()
 	colors = ['navy', 'aqua', 'darkturquoise', 'mediumorchid','gold','green','y','blue']
